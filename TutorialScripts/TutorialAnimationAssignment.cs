@@ -1,0 +1,75 @@
+using UnityEngine;
+using System.Collections;
+
+public class AnimationController : MonoBehaviour {
+
+	public Animator anim;
+	public Rigidbody rBody;
+	public float rotateVel = 100;
+
+	Quaternion targetRotation;
+
+	private float inputH;
+	private float inputV;
+	private bool run;
+
+	// Use this for initialization
+	void Start () {
+		anim = GetComponent<Animator> ();
+		rBody = GetComponent<Rigidbody> ();
+		run = false;
+	}
+
+	// Update is called once per frame
+	void Update () {
+		// For player triggers
+		if (Input.GetKeyDown ("1")) {
+			anim.Play ("WAIT01", -1, 0f);
+		}
+		if (Input.GetKeyDown ("2")) {
+			anim.Play ("WAIT02", -1, 0f);
+		}
+		if (Input.GetKeyDown ("3")) {
+			anim.Play ("WAIT03", -1, 0f);
+		}
+		if (Input.GetKeyDown ("4")) {
+			anim.Play ("WAIT04", -1, 0.1f);
+		}
+		if (Input.GetMouseButtonDown (0)) {
+			int n = Random.Range (0, 2);
+			anim.Play ("DAMAGED0" + n, -1, 0.1f);
+		}
+
+		if(Input.GetKey(KeyCode.LeftShift)){
+			run = true;
+		} else {
+			run = false;
+		}
+
+		if (Input.GetKey (KeyCode.Space)) {
+			anim.SetBool ("jump", true);
+		} else {
+			anim.SetBool ("jump", false);
+		}
+
+		anim.SetBool ("run", run);
+
+		inputH = Input.GetAxis ("Horizontal");
+		inputV = Input.GetAxis ("Vertical");
+
+		anim.SetFloat ("inputH", inputH);
+		anim.SetFloat ("inputV", inputV);
+
+		float moveX = inputH * 20f * Time.deltaTime;
+		float moveZ = inputV * 50f * Time.deltaTime;
+
+		// if (moveZ <= 0f) {
+		// 	moveX = 0f;
+		// } else if (run){
+		// 	moveX *= 3f;
+		// 	moveZ *= 3f;
+		// }
+
+		rBody.velocity = new Vector3 (moveX, 0f, moveZ);
+	}
+}
