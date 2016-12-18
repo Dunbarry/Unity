@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 
 public class CharacterController: MonoBehaviour {
-
+//	Movement
 	public float runSpeed = 9;
 	public float walkSpeed = 0;
 
@@ -13,10 +13,10 @@ public class CharacterController: MonoBehaviour {
 	float speedSmoothVelocity;
 	float currentSpeed;
 
-	public float distToGrounded = .5f;
+//	Gravity
+	public float distToGrounded = 1.75f;
 	public LayerMask ground;
-	public float downAccel = .75f;
-	Vector3 velocity = Vector3.zero;
+	public Vector3 velocity = Vector3.zero;
 
 	bool Grounded()
 	{
@@ -24,7 +24,7 @@ public class CharacterController: MonoBehaviour {
 	}
 
 //	private float verticalVelocity;
-	private float gravity = 14.0f;
+	private float gravity = 12f;
 	private CharacterController controller;
 
 	//	Animation
@@ -33,6 +33,10 @@ public class CharacterController: MonoBehaviour {
 	private bool run;
 	private bool running;
 	Rigidbody rBody;
+
+	//Keys
+	public int count;
+//	KeyCompletion keyComp;
 
 	void Start()
 	{
@@ -45,20 +49,24 @@ public class CharacterController: MonoBehaviour {
 		//		Animation
 		anim = GetComponent<Animator> ();
 		rBody = GetComponent<Rigidbody> ();
+//		keyComp = GetComponent<KeyCompletion> ();
 		run = true;
+
+		//Keys
+		count = 0;
 	}
 
 	void Update()
 	{
+		velocity.y -= gravity * Time.deltaTime;
+
 		if (Grounded ()) {
 			//zero out velocity.y
-			velocity.y = -gravity * Time.deltaTime;
+			velocity.y = 0;
 //			Debug.LogError ("Grounded.");
-		} else if (!Grounded ()){
-			//decrease velocity.y
-			velocity.y -= downAccel * Time.deltaTime;
-			transform.position += velocity * Time.deltaTime;
 		}
+
+		transform.position += velocity * Time.deltaTime;
 
 		Vector2 input = new Vector2 (Input.GetAxisRaw ("Horizontal"), Input.GetAxisRaw ("Vertical"));
 		Vector2 inputDir = input.normalized;
@@ -76,17 +84,34 @@ public class CharacterController: MonoBehaviour {
 
 		float charSpeed = ((running) ? 1 : .5f) * inputDir.magnitude;
 		anim.SetFloat ("charSpeed", charSpeed, speedSmoothTime, Time.deltaTime);
+
+//		//Blocking
+//		if (Input.GetKey (KeyCode.LeftShift)) {
+//			anim.Play("ShieldAngle", -1, 0f);
+//			anim.SetBool ("Guarding", true);
+//
+//		}
+//		if (Input.GetKeyUp (KeyCode.LeftShift)) {
+//			anim.Play("ShieldRelease", -1, 0f);
+//			anim.SetBool ("Guarding", false);
+//		}
+
+		if(Input.GetKeyDown("1")){
+			anim.Play("Visor", -1, 0f);
+		}
 	}
 
-//	void FixedUpdate(){
-//		if (Grounded ()) {
-//			//zero out velocity.y
-//			velocity.y = -gravity * Time.deltaTime;
-//			Debug.LogError ("Grounded.");
-//		} else if (!Grounded ()){
-//			//decrease velocity.y
-//			velocity.y -= downAccel * Time.deltaTime;
-//			transform.position += velocity * Time.deltaTime;
-//		}
-//	}
+	void OnTriggerEnter(Collider other){
+		if (other.gameObject.CompareTag ("Keys")) {
+			other.gameObject.SetActive (false);
+			count = count + 1;
+			Debug.Log ("Count is:" +count);
+		}
+		if (other.gameObject.CompareTag ("Door")) {
+			if (count == 3) { //If all three keys have been collected
+				KeyCompletion keyComp = other.GetComponent<KeyCompletion> ();
+				keyComp.anim.SetBool ("HasKeys", true);
+			}
+		}
+	}
 }
